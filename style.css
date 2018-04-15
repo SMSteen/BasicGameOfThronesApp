@@ -1,0 +1,47 @@
+.container-fluid{ /* tweak container margins/padding */
+    padding: 25px;
+}
+.houses{
+    display: inline-block;
+}
+
+img{
+    width: 200px;
+    height: 200px;
+    margin: 10px;
+    box-shadow: 3px 3px 6px #252525;
+}
+#house-details, #more-house-details{
+    display: block;
+    width: 75%;
+    margin: 20px auto;
+    padding: 10px;
+    background-color: #ebebe0;
+    box-shadow: 3px 3px 6px #252525;
+}
+h1, h3{
+    text-align: center;
+    margin: 5px;
+}
+h3, h3 span{
+    color: #737373;
+}
+ul{
+    display: inline-block;
+    list-style: none;
+    margin: 10px 20px;
+}
+a{
+    display: block;
+    margin: 15px 0px 10px 0px;
+    text-decoration-line: none;
+    color: #737373;
+    text-align: center;
+    font-style: italic;
+}
+span{
+    padding-left: 5px;
+    font-style: italic;
+    color: #252525;
+    font-weight: bold;
+}

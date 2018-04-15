@@ -1,100 +1,74 @@
-function saveHouseData(houseData){
-    myHouseData = {
-        houseName: houseData[0].name,
-        houseWords: houseData[0].words,
-        houseTitles: houseData[0].titles, //this is an array item
-        houseCoat: houseData[0].coatOfArms,
-        houseRegion: houseData[0].region,        
-        houseCurrentLord: houseData[0].currentLord
-    };
-    if(houseData[0].currentLord == ""){
-        houseCurrentLord: "unknown";
-    }
-    addHouseData(myHouseData)
-    return myHouseData;
-}
-
-function addHouseData(myHouseData){
-    var htmlFrontStr;
-    if(myHouseData.houseCurrentLord == ""){
-        htmlFrontStr = `
-        <h1>${myHouseData.houseName}</h1>
+function showHouseData(results){
+    var htmlFrontData = `
+        <h1>${results[0].name}</h1>
         <ul>
-            <li>Words: <span>${myHouseData.houseWords}</span></li>
-            <li>Region: <span>${myHouseData.houseRegion}</span></li>
-            <li>Coat of Arms: <span>${myHouseData.houseCoat}</span></li>
+            <li>Words:  <span>${results[0].words}</span></li>
+            <li>Region:  <span>${results[0].region}</span></li>
+            <li>Coat of Arms:  <span>${results[0].coatOfArms}</span></li>
+            <li>Titles:  <span>${results[0].titles}</span></li>
         </ul>
-        <p>Titles: <span>${myHouseData.houseTitles}</span></p>
-        `
-    } else {
-        htmlFrontStr = `
-            <h1>${myHouseData.houseName}</h1>
-            <ul>
-                <li>Words: <span>${myHouseData.houseWords}</span></li>
-                <li>Region: <span>${myHouseData.houseRegion}</span></li>
-                <li>Coat of Arms: <span>${myHouseData.houseCoat}</span></li>
-            </ul>
-            <p>Titles: <span>${myHouseData.houseTitles}</span></p>
-            <a href='#' altName='${myHouseData.houseName}' data-link='${myHouseData.houseCurrentLord}'>Click here for more...</a>
-        `
+    `;
+    if (results[0].currentLord){ //house has a Lord, create link to access data on House Lord
+        htmlFrontData += `<a href="#" altName="${results[0].name}" data-link="${results[0].currentLord}">Click here for more...</a>`;
     }
-    $("#house-details").html(htmlFrontStr);
+    // add the data to front of card
+    $("#house-details").html(htmlFrontData);
     //show the front card details
     $("#house-details").show();
 }
 
-function saveCharData(charData){
-    myCharData = {
-        name: charData.name,
-        born: charData.born,
-        titles: charData.titles,
-        akas: charData.aliases
-    };
-
-    addCharData(myCharData)
-    return myCharData;
-}
-
-function addCharData(charData){
-   htmlBackStr = `
+function showLordData(results){
+    var htmlBackData = `
         <h1>${$("#house-details a").attr("altName")}</h1>
-        <h2><span>${myCharData.name}</span>, Current Lord</h2>
+        <h3><span>${results.name}</span>, Current Lord</h3>
         <ul>
-            <li>Title: <span>${myCharData.titles}</span></li>
-            <li>Born in: <span>${myCharData.born}</span></li>
-            <li>Also known as: <span>${myCharData.akas}</span></li>
+            <li>Title:  <span>${results.titles}</span></li>
+            <li>Born in:  <span>${results.born}</span></li>
+            <li>Also known as:  <span>${results.aliases}</span></li>
         </ul>
         <a href='#'>return</a>
-        `
-    $("#more-house-details").html(htmlBackStr);
+    `;
+    // add the data to the back of card
+    $("#more-house-details").html(htmlBackData);
+    // show the back card details
+    $("#more-house-details").show();
 }
 
 $(document).ready(function(){
     $("#house-details").css("display", "none");
     $("#more-house-details").css("display", "none");
-    var myHouseData = {};
-    var myCharData = {};
-    var htmlBackStr;
 
-    var baseURL  = "https://anapioficeandfire.com/api/";
-
+    let baseURL  = "https://anapioficeandfire.com/api/";
+    let errorMsg = `
+        <p class="text-danger">Oops, something went wrong with this request. If the URL is correct, there could be an issue with the server. Please try again at a later time.</p>
+    `;
     $("img").click(function(){
-        $("#house-details").css("display", "none");
+        // ensure back of former house viewed is hidden when a new house is selected
         $("#more-house-details").css("display", "none");
-        var wordSrch = $(this).attr("alt").replace(/ /g, "%20");
-        var params = "houses?name=" + wordSrch;
-        $.get(baseURL + params, function(houseData){
-            saveHouseData(houseData);
-        },'json');
+        //get house data for to append to url
+        let wordSrch = $(this).attr("alt").replace(/ /g, "%20");
+        let params = "houses?name=" + wordSrch;
+        //create a promise for get (house) request
+        var getHouseData = Promise.resolve($.get(baseURL+params));
+        getHouseData.then(function(response) { //process the data, show on page
+           showHouseData(response);
+        }).catch(function(xhrObj) { //show error message
+            $("#house-details").html(errorMsg);
+            $("#house-details").show();
+        });
     });
 
     //when clicked, show the back card details
     $("#house-details").on("click", "a", function(){
-        console.log($(this).attr("data-link"))
+        let moreParams = $(this).attr("data-link");
         $("#house-details").hide();
-        $("#more-house-details").show();
-        $.get($(this).attr("data-link"), function(charData){
-            saveCharData(charData);
+        //create a promise for get (lord) request
+        var getLordData = Promise.resolve($.get(moreParams));
+        getLordData.then(function(response){ //process the data, show on page
+            showLordData(response);
+        }).catch(function(xhrObj){ //show error message
+            $("#more-house-details").html(errorMsg);
+            $("#more-house-details").show();
         });
     });
 
